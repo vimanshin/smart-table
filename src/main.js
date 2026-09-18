@@ -9,6 +9,7 @@ import { processFormData } from './lib/utils.js';
 import { initTable } from './components/table.js';
 import { initPagination } from './components/pagination.js';
 import { initSorting } from './components/sorting.js';
+import { initFiltering } from './components/filtering.js';
 
 // Исходные данные используемые в render()
 const { data, ...indexes } = initData(sourceData);
@@ -24,7 +25,11 @@ function collectState() {
   const rowsPerPage = parseInt(state.rowsPerPage);
   const page = parseInt(state.page ?? 1);
 
-  return { ...state, rowsPerPage, page };
+  // В форме два поля totalFrom и totalTo, а в строке данных одно поле total.
+  // Собираем из них массив [от, до] — только так правило arrayAsRange увидит диапазон
+  const total = [state.totalFrom, state.totalTo];
+
+  return { ...state, rowsPerPage, page, total };
 }
 
 /**
@@ -35,7 +40,8 @@ function render(action) {
   let state = collectState(); // состояние полей из таблицы
   let result = [...data]; // копируем для последующего изменения
 
-  result = applySorting(result, state, action); // сортируем весь набор данных
+  result = applyFiltering(result, state, action); // фильтруем до сортировки: сортировать меньше
+  result = applySorting(result, state, action); // сортируем отфильтрованный набор
   result = applyPagination(result, state, action); // пагинация применяется последней
 
   sampleTable.render(result);
@@ -45,11 +51,18 @@ const sampleTable = initTable(
   {
     tableTemplate: 'table',
     rowTemplate: 'row',
-    before: ['header'],
+    before: ['header', 'filter'],
     after: ['pagination'],
   },
   render
 );
+
+// Фильтрация: элементы строки фильтров и индексы, которыми заполняем выпадающие списки.
+// Ключ searchBySeller совпадает с data-name select-а в шаблоне filter
+const applyFiltering = initFiltering(sampleTable.filter.elements, {
+  searchBySeller: indexes.sellers,
+});
+
 // Сортировка: передаём массив кнопок-заголовков, чтобы модуль мог
 // переключать активную и сбрасывать остальные
 const applySorting = initSorting([
