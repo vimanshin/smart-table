@@ -10,6 +10,7 @@ import { initTable } from './components/table.js';
 import { initPagination } from './components/pagination.js';
 import { initSorting } from './components/sorting.js';
 import { initFiltering } from './components/filtering.js';
+import { initSearching } from './components/searching.js';
 
 // Исходные данные используемые в render()
 const { data, ...indexes } = initData(sourceData);
@@ -40,6 +41,7 @@ function render(action) {
   let state = collectState(); // состояние полей из таблицы
   let result = [...data]; // копируем для последующего изменения
 
+  result = applySearching(result, state, action); // общий поиск идёт первым: отсекает больше всего
   result = applyFiltering(result, state, action); // фильтруем до сортировки: сортировать меньше
   result = applySorting(result, state, action); // сортируем отфильтрованный набор
   result = applyPagination(result, state, action); // пагинация применяется последней
@@ -51,11 +53,14 @@ const sampleTable = initTable(
   {
     tableTemplate: 'table',
     rowTemplate: 'row',
-    before: ['header', 'filter'],
+    before: ['search', 'header', 'filter'],
     after: ['pagination'],
   },
   render
 );
+
+// Поиск: передаём имя поля формы, чтобы модуль знал, откуда брать запрос
+const applySearching = initSearching('search');
 
 // Фильтрация: элементы строки фильтров и индексы, которыми заполняем выпадающие списки.
 // Ключ searchBySeller совпадает с data-name select-а в шаблоне filter
