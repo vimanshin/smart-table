@@ -1,18 +1,59 @@
-import {getPages} from "../lib/utils.js";
+import { getPages } from '../lib/utils.js';
 
-export const initPagination = ({pages, fromRow, toRow, totalRows}, createPage) => {
-    // @todo: #2.3 — подготовить шаблон кнопки для страницы и очистить контейнер
+// Сколько кнопок страниц показываем одновременно
+const VISIBLE_PAGES = 5;
 
-    return (data, state, action) => {
-        // @todo: #2.1 — посчитать количество страниц, объявить переменные и константы
+export const initPagination = (
+  { pages, fromRow, toRow, totalRows },
+  createPage
+) => {
+  // Сохраняем заготовку кнопки из разметки как шаблон и убираем оригинал,
+  // чтобы контейнер страниц стал пустым — дальше он заполняется только нашими копиями
+  const pageTemplate = pages.firstElementChild.cloneNode(true);
+  pages.firstElementChild.remove();
 
-        // @todo: #2.6 — обработать действия
+  return (data, state, action) => {
+    const rowsPerPage = state.rowsPerPage;
+    const pageCount = Math.ceil(data.length / rowsPerPage);
+    let page = state.page;
 
-        // @todo: #2.4 — получить список видимых страниц и вывести их
+    // Нажатая кнопка приходит в action. При первой отрисовке и при change его нет
+    if (action)
+      switch (action.name) {
+        case 'prev':
+          page = Math.max(1, page - 1);
+          break;
+        case 'next':
+          page = Math.min(pageCount, page + 1);
+          break;
+        case 'first':
+          page = 1;
+          break;
+        case 'last':
+          page = pageCount;
+          break;
+      }
 
-        // @todo: #2.5 — обновить статус пагинации
+    // Страховка от выхода за границы: данных могло стать меньше после фильтра или поиска
+    page = Math.max(1, Math.min(pageCount, page));
 
-        // @todo: #2.2 — посчитать сколько строк нужно пропустить и получить срез данных
-        return data.slice(0, 10);
-    }
-}
+    // Сколько строк пропускаем до начала текущей страницы
+    const skip = (page - 1) * rowsPerPage;
+
+    // Считаем, какие номера страниц показать вокруг текущей, и перерисовываем кнопки
+    const visiblePages = getPages(page, pageCount, VISIBLE_PAGES);
+    pages.replaceChildren(
+      ...visiblePages.map((pageNumber) => {
+        const pageElement = pageTemplate.cloneNode(true);
+        return createPage(pageElement, pageNumber, pageNumber === page);
+      })
+    );
+
+    // Статус: человеческая нумерация строк с единицы, при пустой выборке — нули
+    fromRow.textContent = data.length === 0 ? 0 : skip + 1;
+    toRow.textContent = Math.min(skip + rowsPerPage, data.length);
+    totalRows.textContent = data.length;
+
+    return data.slice(skip, skip + rowsPerPage);
+  };
+};
