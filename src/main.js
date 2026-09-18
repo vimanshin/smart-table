@@ -8,6 +8,7 @@ import { processFormData } from './lib/utils.js';
 
 import { initTable } from './components/table.js';
 import { initPagination } from './components/pagination.js';
+import { initSorting } from './components/sorting.js';
 
 // Исходные данные используемые в render()
 const { data, ...indexes } = initData(sourceData);
@@ -34,6 +35,7 @@ function render(action) {
   let state = collectState(); // состояние полей из таблицы
   let result = [...data]; // копируем для последующего изменения
 
+  result = applySorting(result, state, action); // сортируем весь набор данных
   result = applyPagination(result, state, action); // пагинация применяется последней
 
   sampleTable.render(result);
@@ -43,11 +45,17 @@ const sampleTable = initTable(
   {
     tableTemplate: 'table',
     rowTemplate: 'row',
-    before: [],
+    before: ['header'],
     after: ['pagination'],
   },
   render
 );
+// Сортировка: передаём массив кнопок-заголовков, чтобы модуль мог
+// переключать активную и сбрасывать остальные
+const applySorting = initSorting([
+  sampleTable.header.elements.sortByDate,
+  sampleTable.header.elements.sortByTotal,
+]);
 
 // Пагинация: первым аргументом — элементы из шаблона, вторым — как заполнить одну кнопку страницы
 const applyPagination = initPagination(
