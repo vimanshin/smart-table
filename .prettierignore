@@ -1,2 +1,13 @@
 node_modules
 package-lock.json
+dist
+
+# Файлы курса, которые нельзя менять — на них завязаны автотесты.
+# Без этого форматирование по сохранению переписало бы их под .prettierrc
+# и создало бы diff там, где его быть не должно.
+index.html
+src/style.css
+src/fonts/
+src/lib/
+src/data/
+src/data.js

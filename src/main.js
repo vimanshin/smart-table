@@ -78,13 +78,18 @@ const applySorting = initSorting([
 // Пагинация: первым аргументом — элементы из шаблона, вторым — как заполнить одну кнопку страницы
 const applyPagination = initPagination(
   sampleTable.pagination.elements,
-  // Колбэк рисует одну кнопку страницы: number в input и в подпись
+  // Колбэк рисует одну кнопку страницы: номер в input и в подпись
   (el, page, isCurrent) => {
     const input = el.querySelector('input');
     const label = el.querySelector('span');
     input.value = page;
     input.checked = isCurrent;
     label.textContent = page;
+
+    // Шаблон клонируется вместе с aria-label исходной кнопки,
+    // поэтому доступное имя нужно обновить под свой номер страницы
+    el.setAttribute('aria-label', `Goto page ${page}`);
+
     return el;
   }
 );
