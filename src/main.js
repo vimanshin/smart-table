@@ -41,10 +41,14 @@ function render(action) {
   let state = collectState(); // состояние полей из таблицы
   let result = [...data]; // копируем для последующего изменения
 
-  result = applySearching(result, state, action); // общий поиск идёт первым: отсекает больше всего
-  result = applyFiltering(result, state, action); // фильтруем до сортировки: сортировать меньше
-  result = applySorting(result, state, action); // сортируем отфильтрованный набор
-  result = applyPagination(result, state, action); // пагинация применяется последней
+  // result = applySearching(result, state, action); // общий поиск идёт
+  // первым: отсекает больше всего
+  // result = applyFiltering(result, state, action); // фильтруем до
+  // сортировки: сортировать меньше
+  // result = applySorting(result, state, action); // сортируем
+  // отфильтрованный набор
+  // result = applyPagination(result, state, action); // пагинация
+  // применяется последней
 
   sampleTable.render(result);
 }
@@ -64,9 +68,9 @@ const applySearching = initSearching('search');
 
 // Фильтрация: элементы строки фильтров и индексы, которыми заполняем выпадающие списки.
 // Ключ searchBySeller совпадает с data-name select-а в шаблоне filter
-const applyFiltering = initFiltering(sampleTable.filter.elements, {
-  searchBySeller: indexes.sellers,
-});
+// const applyFiltering = initFiltering(sampleTable.filter.elements, {
+//  searchBySeller: indexes.sellers,
+// });
 
 // Сортировка: передаём массив кнопок-заголовков, чтобы модуль мог
 // переключать активную и сбрасывать остальные
