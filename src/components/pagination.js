@@ -40,6 +40,9 @@ export const initPagination = (
           break;
       }
 
+    // если ничего не нашлось, pageCount = 0 — а страницы с номером меньше 1 не бывает
+    if (page < 1) page = 1;
+
     return Object.assign({}, query, {
       limit,
       page,
