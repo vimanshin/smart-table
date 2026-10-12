@@ -42,10 +42,17 @@ async function render(action) {
   // отфильтрованный набор
   query = applyPagination(query, state, action); // обновляем query
 
-  const { total, items } = await api.getRecords(query); // запрашиваем данные с собранными параметрами
+  let result = await api.getRecords(query); // запрашиваем данные с собранными параметрами
 
-  updatePagination(total, query); // перерисовываем пагинатор
-  sampleTable.render(items);
+  // записи есть, а страница пустая — значит, такой страницы уже нет, просим последнюю
+  if (result.items.length === 0 && result.total > 0) {
+    const lastPage = Math.ceil(result.total / query.limit);
+    query = Object.assign({}, query, { page: lastPage });
+    result = await api.getRecords(query);
+  }
+
+  updatePagination(result.total, query); // перерисовываем пагинатор
+  sampleTable.render(result.items);
 }
 
 const sampleTable = initTable(
