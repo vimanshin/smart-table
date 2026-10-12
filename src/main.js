@@ -24,11 +24,7 @@ function collectState() {
   const rowsPerPage = parseInt(state.rowsPerPage);
   const page = parseInt(state.page ?? 1);
 
-  // В форме два поля totalFrom и totalTo, а в строке данных одно поле total.
-  // Собираем из них массив [от, до] — только так правило arrayAsRange увидит диапазон
-  const total = [state.totalFrom, state.totalTo];
-
-  return { ...state, rowsPerPage, page, total };
+  return { ...state, rowsPerPage, page };
 }
 
 /**
@@ -41,8 +37,7 @@ async function render(action) {
 
   // result = applySearching(result, state, action); // общий поиск идёт
   // первым: отсекает больше всего
-  // result = applyFiltering(result, state, action); // фильтруем до
-  // сортировки: сортировать меньше
+  query = applyFiltering(query, state, action); // добавляем параметры фильтра
   // result = applySorting(result, state, action); // сортируем
   // отфильтрованный набор
   query = applyPagination(query, state, action); // обновляем query
@@ -66,11 +61,8 @@ const sampleTable = initTable(
 // Поиск: передаём имя поля формы, чтобы модуль знал, откуда брать запрос
 const applySearching = initSearching('search');
 
-// Фильтрация: элементы строки фильтров и индексы, которыми заполняем выпадающие списки.
-// Ключ searchBySeller совпадает с data-name select-а в шаблоне filter
-// const applyFiltering = initFiltering(sampleTable.filter.elements, {
-//  searchBySeller: indexes.sellers,
-// });
+// Фильтрация: элементы строки фильтров, списки заполним в init(), когда придут продавцы
+const { applyFiltering, updateIndexes } = initFiltering(sampleTable.filter.elements);
 
 // Сортировка: передаём массив кнопок-заголовков, чтобы модуль мог
 // переключать активную и сбрасывать остальные
@@ -103,6 +95,11 @@ appRoot.appendChild(sampleTable.container);
 
 async function init() {
   const indexes = await api.getIndexes();
+
+  // Ключ searchBySeller совпадает с data-name select-а в шаблоне filter
+  updateIndexes(sampleTable.filter.elements, {
+    searchBySeller: indexes.sellers,
+  });
 }
 
 init().then(render);
