@@ -12,8 +12,8 @@ import { initSorting } from './components/sorting.js';
 import { initFiltering } from './components/filtering.js';
 import { initSearching } from './components/searching.js';
 
-// Исходные данные используемые в render()
-const { data, ...indexes } = initData(sourceData);
+// API для получения данных (пока с локальными данными)
+const api = initData(sourceData);
 
 /**
  * Сбор и обработка полей из таблицы
@@ -37,9 +37,9 @@ function collectState() {
  * Перерисовка состояния таблицы при любых изменениях
  * @param {HTMLButtonElement?} action
  */
-function render(action) {
+async function render(action) {
   let state = collectState(); // состояние полей из таблицы
-  let result = [...data]; // копируем для последующего изменения
+  let query = {}; // здесь будут формироваться параметры запроса
 
   // result = applySearching(result, state, action); // общий поиск идёт
   // первым: отсекает больше всего
@@ -50,7 +50,8 @@ function render(action) {
   // result = applyPagination(result, state, action); // пагинация
   // применяется последней
 
-  sampleTable.render(result);
+  const { total, items } = await api.getRecords(query); // запрашиваем данные с собранными параметрами
+  sampleTable.render(items);
 }
 
 const sampleTable = initTable(
@@ -101,4 +102,8 @@ const applyPagination = initPagination(
 const appRoot = document.querySelector('#app');
 appRoot.appendChild(sampleTable.container);
 
-render();
+async function init() {
+  const indexes = await api.getIndexes();
+}
+
+init().then(render);
