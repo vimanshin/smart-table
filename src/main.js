@@ -45,10 +45,11 @@ async function render(action) {
   // сортировки: сортировать меньше
   // result = applySorting(result, state, action); // сортируем
   // отфильтрованный набор
-  // result = applyPagination(result, state, action); // пагинация
-  // применяется последней
+  query = applyPagination(query, state, action); // обновляем query
 
   const { total, items } = await api.getRecords(query); // запрашиваем данные с собранными параметрами
+
+  updatePagination(total, query); // перерисовываем пагинатор
   sampleTable.render(items);
 }
 
@@ -79,7 +80,7 @@ const applySorting = initSorting([
 ]);
 
 // Пагинация: первым аргументом — элементы из шаблона, вторым — как заполнить одну кнопку страницы
-const applyPagination = initPagination(
+const { applyPagination, updatePagination } = initPagination(
   sampleTable.pagination.elements,
   // Колбэк рисует одну кнопку страницы: номер в input и в подпись
   (el, page, isCurrent) => {

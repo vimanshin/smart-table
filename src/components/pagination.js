@@ -3,9 +3,9 @@ import { getPages } from '../lib/utils.js';
 // Сколько кнопок страниц показываем одновременно
 const VISIBLE_PAGES = 5;
 
-// Функция: настраивает пагинацию — режет данные на страницы и рисует навигацию
+// Функция: настраивает пагинацию — готовит параметры страницы для запроса и рисует навигацию по ответу
 // Принимает: элементы шаблона pagination по data-name и колбэк отрисовки одной кнопки страницы
-// Возвращает: функцию, которая при каждой перерисовке отдаёт строки текущей страницы
+// Возвращает: объект с applyPagination (до запроса) и updatePagination (после запроса)
 export const initPagination = (
   { pages, fromRow, toRow, totalRows },
   createPage
@@ -15,9 +15,12 @@ export const initPagination = (
   const pageTemplate = pages.firstElementChild.cloneNode(true);
   pages.firstElementChild.remove();
 
-  return (data, state, action) => {
-    const rowsPerPage = state.rowsPerPage;
-    const pageCount = Math.ceil(data.length / rowsPerPage);
+  // сколько страниц было при прошлой отрисовке — нужно кнопкам next и last
+  let pageCount;
+
+  // добавляем в query параметры страницы
+  const applyPagination = (query, state, action) => {
+    const limit = state.rowsPerPage;
     let page = state.page;
 
     // Нажатая кнопка приходит в action. При первой отрисовке и при change его нет
@@ -37,11 +40,15 @@ export const initPagination = (
           break;
       }
 
-    // Страховка от выхода за границы: данных могло стать меньше после фильтра или поиска
-    page = Math.max(1, Math.min(pageCount, page));
+    return Object.assign({}, query, {
+      limit,
+      page,
+    });
+  };
 
-    // Сколько строк пропускаем до начала текущей страницы
-    const skip = (page - 1) * rowsPerPage;
+  // перерисовываем кнопки страниц и статус по ответу сервера
+  const updatePagination = (total, { page, limit }) => {
+    pageCount = Math.ceil(total / limit);
 
     // Считаем, какие номера страниц показать вокруг текущей, и перерисовываем кнопки
     const visiblePages = getPages(page, pageCount, VISIBLE_PAGES);
@@ -52,11 +59,17 @@ export const initPagination = (
       })
     );
 
-    // Статус: человеческая нумерация строк с единицы, при пустой выборке — нули
-    fromRow.textContent = data.length === 0 ? 0 : skip + 1;
-    toRow.textContent = Math.min(skip + rowsPerPage, data.length);
-    totalRows.textContent = data.length;
+    // Сколько строк пропущено до начала текущей страницы
+    const skip = (page - 1) * limit;
 
-    return data.slice(skip, skip + rowsPerPage);
+    // Статус: человеческая нумерация строк с единицы, при пустой выборке — нули
+    fromRow.textContent = total === 0 ? 0 : skip + 1;
+    toRow.textContent = Math.min(skip + limit, total);
+    totalRows.textContent = total;
+  };
+
+  return {
+    updatePagination,
+    applyPagination,
   };
 };
