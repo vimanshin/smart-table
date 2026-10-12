@@ -35,8 +35,7 @@ async function render(action) {
   let state = collectState(); // состояние полей из таблицы
   let query = {}; // здесь будут формироваться параметры запроса
 
-  // result = applySearching(result, state, action); // общий поиск идёт
-  // первым: отсекает больше всего
+  query = applySearching(query, state, action); // добавляем поисковый запрос
   query = applyFiltering(query, state, action); // добавляем параметры фильтра
   // result = applySorting(result, state, action); // сортируем
   // отфильтрованный набор
