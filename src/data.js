@@ -39,6 +39,12 @@ export function initData() {
     }
 
     const response = await fetch(`${BASE_URL}/records?${nextQuery}`);
+
+    // сервер не принял параметры (например, неполную дату) — показываем пустую таблицу
+    if (!response.ok) {
+      return { total: 0, items: [] };
+    }
+
     const records = await response.json();
 
     lastQuery = nextQuery;
