@@ -24,7 +24,7 @@ export const initPagination = (
     let page = state.page;
 
     // Нажатая кнопка приходит в action. При первой отрисовке и при change его нет
-    if (action)
+    if (action) {
       switch (action.name) {
         case 'prev':
           page = Math.max(1, page - 1);
@@ -39,6 +39,7 @@ export const initPagination = (
           page = pageCount;
           break;
       }
+    }
 
     // если ничего не нашлось, pageCount = 0 — а страницы с номером меньше 1 не бывает
     if (page < 1) page = 1;

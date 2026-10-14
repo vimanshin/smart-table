@@ -28,11 +28,13 @@ function collectState() {
 }
 
 /**
- * Перерисовка состояния таблицы при любых изменениях
+ * Перерисовка таблицы при любых изменениях: собирает параметры запроса,
+ * получает данные с сервера и выводит их
  * @param {HTMLButtonElement?} action
+ * @returns {Promise<void>}
  */
 async function render(action) {
-  let state = collectState(); // состояние полей из таблицы
+  const state = collectState(); // состояние полей из таблицы
   let query = {}; // здесь будут формироваться параметры запроса
 
   query = applySearching(query, state, action); // добавляем поисковый запрос
