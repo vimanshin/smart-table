@@ -37,8 +37,7 @@ async function render(action) {
 
   query = applySearching(query, state, action); // добавляем поисковый запрос
   query = applyFiltering(query, state, action); // добавляем параметры фильтра
-  // result = applySorting(result, state, action); // сортируем
-  // отфильтрованный набор
+  query = applySorting(query, state, action); // добавляем параметр сортировки
   query = applyPagination(query, state, action); // обновляем query
 
   let result = await api.getRecords(query); // запрашиваем данные с собранными параметрами

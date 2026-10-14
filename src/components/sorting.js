@@ -1,10 +1,10 @@
-import { sortCollection, sortMap } from '../lib/sort.js';
+import { sortMap } from '../lib/sort.js';
 
 // Функция: настраивает сортировку таблицы по колонкам-заголовкам
 // Принимает: массив кнопок сортировки (элементы с data-field и data-value)
-// Возвращает: функцию, которая сортирует данные при каждой перерисовке
+// Возвращает: функцию, которая добавляет параметр сортировки в query
 export function initSorting(columns) {
-  return (data, state, action) => {
+  return (query, state, action) => {
     let field = null;
     let order = null;
 
@@ -30,6 +30,9 @@ export function initSorting(columns) {
       });
     }
 
-    return sortCollection(data, field, order);
+    // сервер ждёт сортировку в виде field:order, а состояние none он не понимает
+    const sort = field && order !== 'none' ? `${field}:${order}` : null;
+
+    return sort ? Object.assign({}, query, { sort }) : query;
   };
 }
